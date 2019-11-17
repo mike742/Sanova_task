@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+
+<body style="font-family: Arial, Helvetica, sans-serif;">
+
+    <input type="search" id="filter" style="width: 70%;" placeholder="filter every column" onkeyup="filter()" />
+
+    <table id="table" cellspacing="10" style="width: 70%;">
+        <tr>
+            <th id="thName" onclick="sortTable(0)">Name</th>
+            <th id="thModel" onclick="sortTable(1)">Model</th>
+            <th id="thColor" onclick="sortTable(2)">Color</th>
+            <th id="thEngine" onclick="sortTable(3)">Engine</th>
+            <th id="thMileage" onclick="sortTable(4)">Mileage</th>
+        </tr>
+    </table>
+</body>
+
+<script>
+    function httpGet(theUrl) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", theUrl, false); // false for synchronous request
+        xmlHttp.send(null);
+        return xmlHttp.responseText;
+    }
+
+    function sortTable(column) {
+        var table, rows, switching, a, b, shouldSwitch, i;
+        table = document.getElementById("table");
+        switching = true;
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                a = rows[i].getElementsByTagName("td")[column];
+                b = rows[i + 1].getElementsByTagName("td")[column];
+                if (direction == 'asc') {
+                    if (compare(a.innerHTML, b.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                else {
+                    if (compare(b.innerHTML, a.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+
+        // draw sort direction's arrows
+        if (column == 0) document.getElementById('thName').innerHTML = 'Name ' +
+            (direction === 'asc' ? '&#8595;' : '&#8593;');
+        else document.getElementById('thName').innerHTML = 'Name';
+        
+        if (column == 1) document.getElementById('thModel').innerHTML = 'Model ' +
+            (direction === 'asc' ? '&#8595;' : '&#8593;');
+        else document.getElementById('thModel').innerHTML = 'Model';
+
+        if (column == 2) document.getElementById('thColor').innerHTML = 'Color ' +
+            (direction === 'asc' ? '&#8595;' : '&#8593;');
+        else document.getElementById('thColor').innerHTML = 'Color';
+
+        if (column == 3) document.getElementById('thEngine').innerHTML = 'Engine ' +
+            (direction === 'asc' ? '&#8595;' : '&#8593;');
+        else document.getElementById('thEngine').innerHTML = 'Engine';
+
+        if (column == 4) document.getElementById('thMileage').innerHTML = 'Mileage ' +
+            (direction === 'asc' ? '&#8595;' : '&#8593;');
+        else document.getElementById('thMileage').innerHTML = 'Mileage';
+
+        direction = direction === 'asc' ? 'desc' : 'asc';
+    }
+ 
+    function compare(a, b) {
+        return isNaN(a) && isNaN(b) ?
+            a.toLowerCase() > b.toLowerCase() : parseInt(a) > parseInt(b);
+    }
+
+    function filter() {
+        var input, filter, table, tr, i;
+        var txtValue0, txtValue1, txtValue2, txtValue3, txtValue4;
+        var td0, td1, td2, td3, td4;
+
+        input = document.getElementById("filter");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("table");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td0 = tr[i].getElementsByTagName("td")[0];
+            td1 = tr[i].getElementsByTagName("td")[1];
+            td2 = tr[i].getElementsByTagName("td")[2];
+            td3 = tr[i].getElementsByTagName("td")[3];
+            td4 = tr[i].getElementsByTagName("td")[4];
+            if (td0 || td1 || td2 || td3 || td4) {
+                txtValue0 = td0.innerText;
+                txtValue1 = td1.innerText;
+                txtValue2 = td2.innerText;
+                txtValue3 = td3.innerText;
+                txtValue4 = td4.innerText;
+                if (txtValue0.toUpperCase().indexOf(filter) > -1 ||
+                    txtValue1.toUpperCase().indexOf(filter) > -1 ||
+                    txtValue2.toUpperCase().indexOf(filter) > -1 ||
+                    txtValue3.toUpperCase().indexOf(filter) > -1 ||
+                    txtValue4.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+    
+    var url = 'https://mobiledev.sunovacu.ca/api/Test/GetCars';
+    var html = JSON.parse(httpGet(url));
+    //console.log(html);
+
+    var direction = 'asc';
+    var tableHtml = '';
+    var table = document.getElementById("table");
+    html.forEach(function (element) {
+        tableHtml += "<tr>" +
+            "<td>" + element.name + "</td>"
+            + "<td>" + element.model + "</td>"
+            + "<td>" + element.color + "</td>"
+            + "<td>" + element.engine + "</td>"
+            + "<td>" + element.mileage + "</td>"
+            + "</tr>";
+    });
+
+    (function () {
+        table.insertAdjacentHTML('beforeend', tableHtml);
+    })();
+</script>
+
+</html>
